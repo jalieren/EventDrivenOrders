@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.OpenApi;
 using OrderAPI.Contracts;
 using OrderAPI.Messaging;
 
@@ -10,13 +11,34 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
 
-var app = builder.Build();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Order API",
+        Version = "v1",
+        Description = "API для создания заказов с RabbitMQ"
+    });
+});
 
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+}
+
+// включаем Swagger 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Order API v1");
+        c.RoutePrefix = "";
+    });
 }
 
 // app.UseHttpsRedirection();

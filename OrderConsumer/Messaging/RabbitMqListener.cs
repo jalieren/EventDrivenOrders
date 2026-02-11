@@ -44,13 +44,51 @@ public class RabbitMqListener
         {
             var body = ea.Body.ToArray();
             var messageJson = Encoding.UTF8.GetString(body);
-            var order = JsonSerializer.Deserialize<Order>(messageJson);
-
+            
+            var order = JsonSerializer.Deserialize<Order>(messageJson, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            
             if (order != null)
             {
                 Console.WriteLine($"Получен заказ {order.Id} для {order.Email}, сумма {order.Amount}");
                 
-                // дописать логику сохранения в бд
+                // сохранение в бд
+                try
+                {
+                    using var pgConn = new NpgsqlConnection(_pgConnectionString);
+                    pgConn.Open();
+
+                    // идемпотентность
+                    var cmdCheck = new NpgsqlCommand("SELECT COUNT(*) FROM Orders WHERE IdempKey = @key", pgConn);
+                    cmdCheck.Parameters.AddWithValue("key", order.IdempKey);
+                    var exists = (long)cmdCheck.ExecuteScalar() > 0;
+
+                    if (exists)
+                    {
+                        Console.WriteLine($"Заказ с IdempotencyKey {order.IdempKey} уже существует");
+                        return;
+                    }
+
+                    // Сохраняем заказ
+                    var cmdInsert = new NpgsqlCommand(
+                        "INSERT INTO Orders (Id, Email, Amount, IdempKey, CreatedAt) VALUES (@id, @email, @amount, @key, @created)",
+                        pgConn
+                    );
+                    cmdInsert.Parameters.AddWithValue("id", order.Id);
+                    cmdInsert.Parameters.AddWithValue("email", order.Email);
+                    cmdInsert.Parameters.AddWithValue("amount", order.Amount);
+                    cmdInsert.Parameters.AddWithValue("key", order.IdempKey);
+                    cmdInsert.Parameters.AddWithValue("created", order.CreatedAt);
+
+                    cmdInsert.ExecuteNonQuery();
+                    Console.WriteLine($"Заказ {order.Id} сохранён в базу");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Ошибка при сохранении заказа {order.Id}: {ex.Message}");
+                }
             }
         };
 
