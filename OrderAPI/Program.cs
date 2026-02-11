@@ -17,8 +17,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Order API",
-        Version = "v1",
-        Description = "API для создания заказов с RabbitMQ"
+        Version = "v1"
     });
 });
 

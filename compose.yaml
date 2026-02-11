@@ -1,9 +1,40 @@
 ﻿services:
   rabbitmq:
-    image:rabbitmq:3-management
-  orderapi:
-    image: orderapi
-    build:
-      context: .
-      dockerfile: OrderAPI/Dockerfile
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5555:15672"  
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      
+  postgres:
+    image: postgres:15
+    container_name: orders-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orders
+    ports:
+      - "5432:5432"
 
+  orderapi:
+    build: ./OrderAPI
+    container_name: orderapi
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+    ports:
+      - "5219:5219"
+
+  orderconsumer:
+    build: ./OrderConsumer
+    container_name: orderconsumer
+    depends_on:
+      - rabbitmq
+      - postgres
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      POSTGRES_CONNECTION: "Host=postgres;Port=5432;Database=orders;Username=postgres;Password=postgres"

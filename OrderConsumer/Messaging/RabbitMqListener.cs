@@ -9,13 +9,16 @@ namespace OrderConsumer.Messaging;
 
 public class RabbitMqListener
 {
-    private readonly string _hostName = "localhost";
+    private readonly string _hostName;
     private readonly string _queueName = "order.created.queue";
     private readonly string _pgConnectionString;
     
     public RabbitMqListener(string pgConnectionString)
     {
         _pgConnectionString = pgConnectionString;
+        
+        _hostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST")
+                    ?? "localhost";
     }
     
     public void StartListening()
@@ -24,11 +27,26 @@ public class RabbitMqListener
         var factory = new ConnectionFactory
         {
             HostName = _hostName,
+            Port = 5672,
             UserName = "guest",
             Password = "guest"
         };
 
-        var connection = factory.CreateConnection();
+        IConnection connection = null;
+
+        while (connection == null)
+        {
+            try
+            {
+                Console.WriteLine($"Подключение к RabbitMQ ({_hostName})...");
+                connection = factory.CreateConnection();
+            }
+            catch
+            {
+                Console.WriteLine("RabbitMQ ещё не готов. Повтор через 5 секунд...");
+                Thread.Sleep(5000);
+            }
+        }
         var channel = connection.CreateModel();
 
         channel.QueueDeclare(

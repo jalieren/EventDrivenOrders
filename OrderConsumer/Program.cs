@@ -3,9 +3,12 @@ using OrderConsumer.Messaging;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-var pgConnectionString = "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=orders";
+// строка подключения
+var pgConnection = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")
+                   ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddSingleton(new RabbitMqListener(pgConnectionString));
+builder.Services.AddSingleton<RabbitMqListener>(sp =>
+    new RabbitMqListener(pgConnection));
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
