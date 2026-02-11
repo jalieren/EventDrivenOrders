@@ -1,3 +1,5 @@
+using Order.API.Contracts;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,8 +13,16 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.MapGet("/health", () => Results.Ok("OK"));
+
+app.MapPost("/orders", (CreateOrderRequest request) =>
+    {
+        var orderId = Guid.NewGuid();
+
+        return Results.Ok(new { OrderId = orderId });
+    }
+);
 
 app.Run();
