@@ -1,4 +1,4 @@
-﻿namespace Order.API.Contracts;
+﻿namespace OrderAPI.Contracts;
 
 public sealed class CreateOrderRequest
 {

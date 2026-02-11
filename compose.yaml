@@ -1,0 +1,9 @@
+﻿services:
+  rabbitmq:
+    image:rabbitmq:3-management
+  orderapi:
+    image: orderapi
+    build:
+      context: .
+      dockerfile: OrderAPI/Dockerfile
+
