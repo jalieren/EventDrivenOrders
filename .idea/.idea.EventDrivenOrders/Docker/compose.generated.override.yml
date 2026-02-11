@@ -1,0 +1,40 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  orderapi:
+    build:
+      context: "C:\\Users\\Георгий\\RiderProjects\\EventDrivenOrders\\OrderAPI"
+      dockerfile: "Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/OrderAPI.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "orderapi:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\Георгий\\RiderProjects\\EventDrivenOrders\\OrderAPI:/app:rw"
+    - "C:\\Users\\Георгий\\RiderProjects\\EventDrivenOrders:/src:rw"
+    - "C:\\Users\\Георгий\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  orderconsumer:
+    build:
+      context: "C:\\Users\\Георгий\\RiderProjects\\EventDrivenOrders\\OrderConsumer"
+      dockerfile: "Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/OrderConsumer.dll"
+    environment:
+      DOTNET_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "orderconsumer:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\Георгий\\RiderProjects\\EventDrivenOrders\\OrderConsumer:/app:rw"
+    - "C:\\Users\\Георгий\\RiderProjects\\EventDrivenOrders:/src:rw"
+    - "C:\\Users\\Георгий\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
